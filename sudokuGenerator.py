@@ -93,7 +93,7 @@ def sudokuGenerate(firstBoard, level):
     generateRandomBoard(firstBoard)
     # printBoard(firstBoard)
     if level == 1:
-        deleteCells(firstBoard,30)
+        deleteCells(firstBoard,2)
     if level == 2:
         deleteCells(firstBoard,40)
     if level == 3:

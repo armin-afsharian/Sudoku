@@ -2,6 +2,8 @@ import pygame
 from sudokuSolverAlgo import *
 from chooseLevel import *
 import time
+import sys
+import copy
 
 # Define some colors
 BLACK = (0, 0, 0)
@@ -23,7 +25,7 @@ numbers_1to9 = [pygame.K_1, pygame.K_2, pygame.K_3, pygame.K_4, pygame.K_5, pyga
                 pygame.K_9]
 
 # Set the width and height of the screen [width, height]
-size = (500, 500)
+size = (500, 600)
 # screen = pygame.display.set_mode(size)
 pygame.init()
 font = pygame.font.Font('freesansbold.ttf', 32)
@@ -42,7 +44,7 @@ def cheatingAllTheWay(sol):
             addNumToBoard(Board[row][column], row, column, L_GREEN)
             time.sleep(0.05)
             pygame.display.flip()
-    finish(sol)
+    #finish(sol)
 
 
 def addNumToBoard(number, row, column, color):
@@ -56,12 +58,12 @@ def addNumToBoard(number, row, column, color):
     drawTheBorder()
 
 
-def finish(sol):
-     
-    if sol == Board: #Check if the state of the board is same as the solution.
-        print("good")
-    else:
-        print("not good")
+def finish(sol, board):
+    for i in range(len(sol)):
+        for j in range(len(sol[i])):
+            if(int(sol[i][j]) != int(board[i][j])):
+                return False
+    return True
 
 
 def addNewRect(row, col, color, width):
@@ -140,26 +142,30 @@ if __name__ == "__main__":
 
     print("solveBoard")
     printBoard(sol)
-
+    feedback = int(sys.argv[1])
     # ------ draw the board ------
     pygame.init()
     screen.fill(BLACK)
     drawInitBoard()
     readyForInput = False
     key = None
+    currentBoard = copy.deepcopy(Board)
     while not done:
         # --- Main event loop
-
+        if((feedback) and finish(sol, Board)):
+            break
+        elif((not feedback) and finish(sol, currentBoard)):
+            break
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
-                done = True
+                break
             if event.type == pygame.KEYDOWN:
                 if event.key in numbers_1to9:
                     key = chr(event.key)
-                if event.key == pygame.K_RETURN:
-                    finish(sol)
-                if event.key == pygame.K_c: #Press 'c' to auto solve the whole board. 
-                    cheatingAllTheWay(sol)
+                #if event.key == pygame.K_RETURN:
+                #    finish(sol)
+                #if event.key == pygame.K_c: #Press 'c' to auto solve the whole board. 
+                #    cheatingAllTheWay(sol)
             if event.type == pygame.MOUSEBUTTONDOWN:
                 # ------ if clicked on a cell get his row and column ------
                 if readyForInput is True:
@@ -170,6 +176,8 @@ if __name__ == "__main__":
                 pos = pygame.mouse.get_pos()
                 column = pos[0] // (WIDTH + MARGIN)
                 row = pos[1] // (WIDTH + MARGIN)
+                if(column > 8 or row > 8):
+                    continue
                 # ------ checking if it is a empty (0 inside) ------
                 if Board[row][column] == 0:
                     # ------ coloring the border of the clicked cell ----- #TODO YELLOW
@@ -181,13 +189,20 @@ if __name__ == "__main__":
         if readyForInput and key is not None:
             # ------ checking if the key is good at it's place ------
             if int(key) == sol[row][column]:
-                Board[row][column] = key
-                flickering(0.1, GREEN)  # flickering at a 0.2 seconds with the color green
-                addNumToBoard(key, row, column, L_GREEN)
+                color = WHITE
+                if(feedback):
+                    Board[row][column] = key
+                    flickering(0.1, GREEN)
+                    color = L_GREEN
+                else:
+                    currentBoard[row][column] = key
+                addNumToBoard(key, row, column, color)
             else:
-                flickering(0.1, RED)  # flickering at a 0.2 seconds with the color red
-                addNumToBoard(key, row, column, L_RED)
-
+                color = WHITE
+                if(feedback):
+                    flickering(0.1, RED)
+                    color = L_RED
+                addNumToBoard(key, row, column, color)
             # -----------------------------------------------
             drawTheBorder()
             readyForInput = False
