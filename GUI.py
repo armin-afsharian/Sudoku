@@ -169,6 +169,8 @@ if __name__ == "__main__":
             if event.type == pygame.MOUSEBUTTONDOWN:
                 # ------ if clicked on a cell get his row and column ------
                 if readyForInput is True:
+                    if(not feedback):
+                        currentBoard[row][column] = 0
                     addNewRect(row, column, WHITE, None)
                     drawTheBorder()
                     readyForInput = False
