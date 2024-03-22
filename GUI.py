@@ -16,8 +16,16 @@ GRAY = (60, 60, 60)
 L_GRAY = (220, 220, 220)
 YELLOW = (255, 255, 0)
 
+
 # This sets the WIDTH and HEIGHT of each grid location
 WIDTH = HEIGHT = 50
+
+SUBMIT_WIDTH = 2 * WIDTH
+SUBMIT_HEIGHT = HEIGHT
+SCREEN_WIDTH = 500
+SCREEN_HEIGHT = 650
+
+submit_button_location = []
 
 # This sets the margin between each cell
 MARGIN = 5
@@ -25,7 +33,7 @@ numbers_1to9 = [pygame.K_1, pygame.K_2, pygame.K_3, pygame.K_4, pygame.K_5, pyga
                 pygame.K_9]
 
 # Set the width and height of the screen [width, height]
-size = (500, 600)
+size = (SCREEN_WIDTH, SCREEN_HEIGHT)
 # screen = pygame.display.set_mode(size)
 pygame.init()
 font = pygame.font.Font('freesansbold.ttf', 32)
@@ -102,6 +110,18 @@ def drawTheBorder():
             pygame.draw.line(screen, BLACK, (i * dif, 0), (i * dif, 500), thick)
 
 
+def drawSubmitButton(left, top, color, textInButton):
+    rectSize = pygame.Rect(left, top, SUBMIT_WIDTH, SUBMIT_HEIGHT)
+    pygame.draw.rect(screen, color, rectSize)  # left, top, width, height
+    pygame.draw.rect(screen, BLACK, rectSize, 3)
+    fontButton = pygame.font.Font('freesansbold.ttf', 20)
+    textButton = fontButton.render(textInButton, True, BLACK, )
+    textRectButton = textButton.get_rect()
+    textRectButton.center = (left + (SUBMIT_WIDTH / 2), top + (SUBMIT_HEIGHT / 2))
+    screen.blit(textButton, textRectButton)
+    submit_button_location = [left, top, left + SUBMIT_WIDTH, top + SUBMIT_HEIGHT]
+
+
 def drawInitBoard():
     # printBoard(solvedBoard)
     for row in range(len(Board)):
@@ -124,6 +144,9 @@ def drawInitBoard():
                 (MARGIN + WIDTH) * column + MARGIN + WIDTH / 2, (MARGIN + HEIGHT) * row + MARGIN + WIDTH / 2)
             screen.blit(text, textRect)
             drawTheBorder()
+    
+    # Draw the Submit button
+    drawSubmitButton((SCREEN_WIDTH - SUBMIT_WIDTH) / 2, 9 * HEIGHT + 100, GREEN, "Submit")
 
 
 # -------- Main Program Loop -----------
@@ -152,13 +175,13 @@ if __name__ == "__main__":
     currentBoard = copy.deepcopy(Board)
     while not done:
         # --- Main event loop
-        if((feedback) and finish(sol, Board)):
-            break
-        elif((not feedback) and finish(sol, currentBoard)):
-            break
+        #if((feedback) and finish(sol, Board)):
+        #    break
+        #elif((not feedback) and finish(sol, currentBoard)):
+        #    break
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
-                break
+                done = True
             if event.type == pygame.KEYDOWN:
                 if event.key in numbers_1to9:
                     key = chr(event.key)
@@ -167,6 +190,15 @@ if __name__ == "__main__":
                 #if event.key == pygame.K_c: #Press 'c' to auto solve the whole board. 
                 #    cheatingAllTheWay(sol)
             if event.type == pygame.MOUSEBUTTONDOWN:
+                # ------ if clicked on the submit button ------
+                pos = pygame.mouse.get_pos()
+                if pos[0] >= submit_button_location[0] and pos[0] <= submit_button_location[2]:
+                    if pos[1] >= submit_button_location[1] and pos[1] <= submit_button_location[3]:
+                        if not feedback and finish(sol, currentBoard):
+                            done = True
+                        elif((feedback) and finish(sol, Board)):
+                            done = True
+
                 # ------ if clicked on a cell get his row and column ------
                 if readyForInput is True:
                     if(not feedback):
@@ -175,7 +207,7 @@ if __name__ == "__main__":
                     drawTheBorder()
                     readyForInput = False
 
-                pos = pygame.mouse.get_pos()
+                #pos = pygame.mouse.get_pos()
                 column = pos[0] // (WIDTH + MARGIN)
                 row = pos[1] // (WIDTH + MARGIN)
                 if(column > 8 or row > 8):
