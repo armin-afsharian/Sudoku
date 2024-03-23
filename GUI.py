@@ -23,9 +23,9 @@ WIDTH = HEIGHT = 50
 SUBMIT_WIDTH = 2 * WIDTH
 SUBMIT_HEIGHT = HEIGHT
 SCREEN_WIDTH = 500
-SCREEN_HEIGHT = 650
+SCREEN_HEIGHT = 750
 
-submit_button_location = []
+SUBMIT_LOCATION = [200, 550, 300, 650]
 
 # This sets the margin between each cell
 MARGIN = 5
@@ -52,7 +52,7 @@ def cheatingAllTheWay(sol):
             addNumToBoard(Board[row][column], row, column, L_GREEN)
             time.sleep(0.05)
             pygame.display.flip()
-    #finish(sol)
+    #validateSubmission(sol)
 
 
 def addNumToBoard(number, row, column, color):
@@ -66,12 +66,13 @@ def addNumToBoard(number, row, column, color):
     drawTheBorder()
 
 
-def finish(sol, board):
+def getIncorrectCells(sol, board):
+    incorrectCells = []
     for i in range(len(sol)):
         for j in range(len(sol[i])):
             if(int(sol[i][j]) != int(board[i][j])):
-                return False
-    return True
+                incorrectCells.append(tuple((i, j)))
+    return incorrectCells
 
 
 def addNewRect(row, col, color, width):
@@ -119,7 +120,6 @@ def drawSubmitButton(left, top, color, textInButton):
     textRectButton = textButton.get_rect()
     textRectButton.center = (left + (SUBMIT_WIDTH / 2), top + (SUBMIT_HEIGHT / 2))
     screen.blit(textButton, textRectButton)
-    submit_button_location = [left, top, left + SUBMIT_WIDTH, top + SUBMIT_HEIGHT]
 
 
 def drawInitBoard():
@@ -149,6 +149,31 @@ def drawInitBoard():
     drawSubmitButton((SCREEN_WIDTH - SUBMIT_WIDTH) / 2, 9 * HEIGHT + 100, GREEN, "Submit")
 
 
+def isComplete(board):
+    for line in board:
+        if not all(int(digit) != 0 for digit in line):
+            return False
+        
+    return True
+
+
+def createAlert(msg):
+    fontButton = pygame.font.Font('freesansbold.ttf', 20)
+    textButton = fontButton.render(msg, True, WHITE, )
+    textRectButton = textButton.get_rect()
+    textRectButton.center = (250, 650)
+    
+    # screen.blit(textButton, textRectButton)
+
+    time.sleep(3)
+    
+    # return
+    
+    rectSize = pygame.Rect(0, 620, SCREEN_WIDTH, SCREEN_HEIGHT - 620)
+    pygame.draw.rect(screen, BLACK, rectSize)
+    # screen.blit(textButton, textRectButton)
+    
+
 # -------- Main Program Loop -----------
 if __name__ == "__main__":
     flag1 = True
@@ -158,7 +183,7 @@ if __name__ == "__main__":
         if level == 1 or level == 2 or level == 3:
             print(level)
             flag1 = False
-    pygame.display.set_caption("Sudoku King1")
+    pygame.display.set_caption("Sudoku")
     screen = pygame.display.set_mode(size)
 
     sol = mainSolver(level)  # first at all the script solve the sudoku by itself
@@ -175,9 +200,9 @@ if __name__ == "__main__":
     currentBoard = copy.deepcopy(Board)
     while not done:
         # --- Main event loop
-        #if((feedback) and finish(sol, Board)):
+        #if((feedback) and validateSubmission(sol, Board)):
         #    break
-        #elif((not feedback) and finish(sol, currentBoard)):
+        #elif((not feedback) and validateSubmission(sol, currentBoard)):
         #    break
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
@@ -186,23 +211,32 @@ if __name__ == "__main__":
                 if event.key in numbers_1to9:
                     key = chr(event.key)
                 #if event.key == pygame.K_RETURN:
-                #    finish(sol)
+                #    validateSubmission(sol)
                 #if event.key == pygame.K_c: #Press 'c' to auto solve the whole board. 
                 #    cheatingAllTheWay(sol)
             if event.type == pygame.MOUSEBUTTONDOWN:
-                # ------ if clicked on the submit button ------
                 pos = pygame.mouse.get_pos()
-                if pos[0] >= submit_button_location[0] and pos[0] <= submit_button_location[2]:
-                    if pos[1] >= submit_button_location[1] and pos[1] <= submit_button_location[3]:
-                        if not feedback and finish(sol, currentBoard):
-                            done = True
-                        elif((feedback) and finish(sol, Board)):
-                            done = True
+                # ------ if clicked on the submit button ------
+                if pos[0] >= SUBMIT_LOCATION[0] and pos[0] <= SUBMIT_LOCATION[2]:
+                    if pos[1] >= SUBMIT_LOCATION[1] and pos[1] <= SUBMIT_LOCATION[3]:
+                        if not isComplete(currentBoard):
+                            createAlert("Incomplete submission. Please fill out all empty blocks.")
+                            # Alert that the table is not complete
+                        else: 
+                            incorrectCells = getIncorrectCells(sol, currentBoard)
+                            if len(incorrectCells) == 0:
+                                createAlert("Congrats!")
+                                done = True
+                                # Alert that the table is not complete
+                            else: 
+                                msg = "Try again - Some mistakes found:"
+                                for cell in incorrectCells:
+                                    msg += (str(cell) + ", ")
+                                createAlert(msg)
 
                 # ------ if clicked on a cell get his row and column ------
                 if readyForInput is True:
-                    if(not feedback):
-                        currentBoard[row][column] = 0
+                    currentBoard[row][column] = 0
                     addNewRect(row, column, WHITE, None)
                     drawTheBorder()
                     readyForInput = False
@@ -222,17 +256,14 @@ if __name__ == "__main__":
 
         if readyForInput and key is not None:
             # ------ checking if the key is good at it's place ------
+            currentBoard[row][column] = int(key)
+            color = WHITE
             if int(key) == sol[row][column]:
-                color = WHITE
                 if(feedback):
-                    Board[row][column] = key
                     flickering(0.1, GREEN)
                     color = L_GREEN
-                else:
-                    currentBoard[row][column] = key
                 addNumToBoard(key, row, column, color)
             else:
-                color = WHITE
                 if(feedback):
                     flickering(0.1, RED)
                     color = L_RED
