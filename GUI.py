@@ -176,7 +176,6 @@ def getTextLines(msg):
 
 def createAlert(msg):
     textLines = getTextLines(msg)
-    print("Lines: \n", textLines)
     rectSize = pygame.Rect(0, 605, SCREEN_WIDTH, SCREEN_HEIGHT - 605)
     pygame.draw.rect(screen, BLACK, rectSize)
     font = pygame.font.Font('freesansbold.ttf', 16)
@@ -221,20 +220,12 @@ if __name__ == "__main__":
     currentBoard = copy.deepcopy(Board)
     while not done:
         # --- Main event loop
-        #if((feedback) and validateSubmission(sol, Board)):
-        #    break
-        #elif((not feedback) and validateSubmission(sol, currentBoard)):
-        #    break
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 done = True
             if event.type == pygame.KEYDOWN:
                 if event.key in numbers_1to9:
                     key = chr(event.key)
-                #if event.key == pygame.K_RETURN:
-                #    validateSubmission(sol)
-                #if event.key == pygame.K_c: #Press 'c' to auto solve the whole board. 
-                #    cheatingAllTheWay(sol)
             if event.type == pygame.MOUSEBUTTONDOWN:
                 pos = pygame.mouse.get_pos()
                 # ------ if clicked on the submit button ------
@@ -297,6 +288,6 @@ if __name__ == "__main__":
         pygame.display.flip()
         pygame.display.update()
 
-time.sleep(10)
+pygame.time.wait(1000)
 # Close the window and quit.
 pygame.quit()
