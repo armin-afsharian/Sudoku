@@ -194,10 +194,16 @@ if __name__ == "__main__":
     flag1 = True
 
     while flag1:
-        level = chooseLevel()
-        if level == 1 or level == 2 or level == 3:
-            print(level)
+        name = enterName()
+        if(name != ""):
             flag1 = False
+    #while flag1:
+    #    level = chooseLevel()
+    #    if level == 1 or level == 2 or level == 3:
+    #        print(level)
+    #        flag1 = False
+    print(name)
+    level = 1
     pygame.display.set_caption("Sudoku")
     screen = pygame.display.set_mode(size)
 
