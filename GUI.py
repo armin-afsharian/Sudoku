@@ -18,6 +18,8 @@ YELLOW = (255, 255, 0)
 
 
 # This sets the WIDTH and HEIGHT of each grid location
+CHAR_LIMIT = 50
+
 WIDTH = HEIGHT = 50
 
 SUBMIT_WIDTH = 2 * WIDTH
@@ -25,7 +27,7 @@ SUBMIT_HEIGHT = HEIGHT
 SCREEN_WIDTH = 500
 SCREEN_HEIGHT = 750
 
-SUBMIT_LOCATION = [200, 550, 300, 650]
+SUBMIT_LOCATION = [200, 550, 300, 600]
 
 # This sets the margin between each cell
 MARGIN = 5
@@ -71,7 +73,7 @@ def getIncorrectCells(sol, board):
     for i in range(len(sol)):
         for j in range(len(sol[i])):
             if(int(sol[i][j]) != int(board[i][j])):
-                incorrectCells.append(tuple((i, j)))
+                incorrectCells.append(tuple((i + 1, j + 1)))
     return incorrectCells
 
 
@@ -157,21 +159,34 @@ def isComplete(board):
     return True
 
 
-def createAlert(msg):
-    fontButton = pygame.font.Font('freesansbold.ttf', 20)
-    textButton = fontButton.render(msg, True, WHITE, )
-    textRectButton = textButton.get_rect()
-    textRectButton.center = (250, 650)
-    
-    # screen.blit(textButton, textRectButton)
+def getTextLines(msg):
+    remaining_msg = msg
+    msg_chunks = []
+    while len(remaining_msg) > CHAR_LIMIT:
+        cutoff_index = CHAR_LIMIT
+        while cutoff_index < len(remaining_msg) and remaining_msg[cutoff_index] != " ":
+            cutoff_index += 1
 
-    time.sleep(3)
-    
-    # return
-    
-    rectSize = pygame.Rect(0, 620, SCREEN_WIDTH, SCREEN_HEIGHT - 620)
+        msg_chunks.append(remaining_msg[:cutoff_index])
+        remaining_msg = remaining_msg[cutoff_index:]
+
+    msg_chunks.append(remaining_msg)
+    return msg_chunks
+
+
+def createAlert(msg):
+    textLines = getTextLines(msg)
+    print("Lines: \n", textLines)
+    rectSize = pygame.Rect(0, 605, SCREEN_WIDTH, SCREEN_HEIGHT - 605)
     pygame.draw.rect(screen, BLACK, rectSize)
-    # screen.blit(textButton, textRectButton)
+    font = pygame.font.Font('freesansbold.ttf', 16)
+    i = 0
+    for textLine in textLines:
+        txt = font.render(textLine, True, WHITE, )
+        txtRect = txt.get_rect()
+        txtRect.center = (250, 620 + (22 * i))
+        i += 1
+        screen.blit(txt, txtRect)
     
 
 # -------- Main Program Loop -----------
@@ -229,9 +244,9 @@ if __name__ == "__main__":
                                 done = True
                                 # Alert that the table is not complete
                             else: 
-                                msg = "Try again - Some mistakes found:"
+                                msg = "Try again - Some mistakes found: "
                                 for cell in incorrectCells:
-                                    msg += (str(cell) + ", ")
+                                    msg += ("row=" + str(cell[0]) + "-column=" + str(cell[1]) + " // ")
                                 createAlert(msg)
 
                 # ------ if clicked on a cell get his row and column ------
@@ -276,6 +291,6 @@ if __name__ == "__main__":
         pygame.display.flip()
         pygame.display.update()
 
-
+time.sleep(10)
 # Close the window and quit.
 pygame.quit()
