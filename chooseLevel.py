@@ -107,8 +107,11 @@ def enterName():
                     user_text = user_text[:-1] 
     
                 # Unicode standard is used for string 
-                # formation 
-                else: 
+                # formation
+                elif event.key == pygame.K_RETURN:
+                    pygame.mouse.set_cursor(cursor1) 
+                    return user_text
+                elif event.unicode.isalpha(): 
                     user_text += event.unicode
           
         # draw rectangle and argument passed which should 
