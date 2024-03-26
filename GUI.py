@@ -4,6 +4,7 @@ from chooseLevel import *
 import time
 import sys
 import copy
+from csv import writer
 
 # Define some colors
 BLACK = (0, 0, 0)
@@ -122,6 +123,7 @@ def drawSubmitButton(left, top, color, textInButton):
     textRectButton = textButton.get_rect()
     textRectButton.center = (left + (SUBMIT_WIDTH / 2), top + (SUBMIT_HEIGHT / 2))
     screen.blit(textButton, textRectButton)
+    return rectSize
 
 
 def drawInitBoard():
@@ -147,8 +149,7 @@ def drawInitBoard():
             screen.blit(text, textRect)
             drawTheBorder()
     
-    # Draw the Submit button
-    drawSubmitButton((SCREEN_WIDTH - SUBMIT_WIDTH) / 2, 9 * HEIGHT + 100, GREEN, "Submit")
+    
 
 
 def isComplete(board):
@@ -215,9 +216,17 @@ if __name__ == "__main__":
     pygame.init()
     screen.fill(BLACK)
     drawInitBoard()
+    cursor1 = pygame.SYSTEM_CURSOR_ARROW
+    cursor2 = pygame.SYSTEM_CURSOR_HAND  
+    # Draw the Submit button
+    submitButton = drawSubmitButton((SCREEN_WIDTH - SUBMIT_WIDTH) / 2, 9 * HEIGHT + 100, GREEN, "Submit")
     readyForInput = False
     key = None
     currentBoard = copy.deepcopy(Board)
+    startTime = time.time()
+    faults = 0
+    submitFaults = 0
+    correctionCount = 0
     while not done:
         # --- Main event loop
         for event in pygame.event.get():
@@ -229,25 +238,26 @@ if __name__ == "__main__":
             if event.type == pygame.MOUSEBUTTONDOWN:
                 pos = pygame.mouse.get_pos()
                 # ------ if clicked on the submit button ------
-                if pos[0] >= SUBMIT_LOCATION[0] and pos[0] <= SUBMIT_LOCATION[2]:
-                    if pos[1] >= SUBMIT_LOCATION[1] and pos[1] <= SUBMIT_LOCATION[3]:
-                        if not isComplete(currentBoard):
-                            createAlert("Incomplete submission. Please fill out all empty blocks.")
+                if submitButton.collidepoint(pos):
+                    if not isComplete(currentBoard):
+                        createAlert("Incomplete submission. Please fill out all empty blocks.")
+                        # Alert that the table is not complete
+                    else: 
+                        incorrectCells = getIncorrectCells(sol, currentBoard)
+                        submitFaults += len(incorrectCells)
+                        if len(incorrectCells) == 0:
+                            createAlert("Congrats!")
+                            done = True
                             # Alert that the table is not complete
                         else: 
-                            incorrectCells = getIncorrectCells(sol, currentBoard)
-                            if len(incorrectCells) == 0:
-                                createAlert("Congrats!")
-                                done = True
-                                # Alert that the table is not complete
-                            else: 
-                                msg = "Try again - Some mistakes found: "
-                                for cell in incorrectCells:
-                                    msg += ("row=" + str(cell[0]) + "-column=" + str(cell[1]) + " // ")
-                                createAlert(msg)
+                            msg = "Try again - Some mistakes found: "
+                            for cell in incorrectCells:
+                                msg += ("row=" + str(cell[0]) + "-column=" + str(cell[1]) + " // ")
+                            createAlert(msg)
 
                 # ------ if clicked on a cell get his row and column ------
                 if readyForInput is True:
+                    correctionCount += 1
                     currentBoard[row][column] = 0
                     addNewRect(row, column, WHITE, None)
                     drawTheBorder()
@@ -266,8 +276,17 @@ if __name__ == "__main__":
                     readyForInput = True
                     # ------ now only wait for input from the user -----
 
+        pos = pygame.mouse.get_pos()
+
+        if(submitButton.collidepoint(pos)):
+            pygame.mouse.set_cursor(cursor2)
+        else:
+            pygame.mouse.set_cursor(cursor1)
+
         if readyForInput and key is not None:
             # ------ checking if the key is good at it's place ------
+            if currentBoard[row][column] != 0:
+                correctionCount += 1
             currentBoard[row][column] = int(key)
             color = WHITE
             if int(key) == sol[row][column]:
@@ -276,6 +295,8 @@ if __name__ == "__main__":
                     color = L_GREEN
                 addNumToBoard(key, row, column, color)
             else:
+                faultBoard[row][column] += 1
+                faults += 1
                 if(feedback):
                     flickering(0.1, RED)
                     color = L_RED
@@ -287,6 +308,31 @@ if __name__ == "__main__":
         key = None
         pygame.display.flip()
         pygame.display.update()
+
+finishTime = time.time()
+duration = finishTime - startTime
+brute_force = 0
+for row in faultBoard:
+    for cellFault in row:
+        if(cellFault >= 2):
+            brute_force += 1
+
+list = [name, feedback, int(duration), faults, submitFaults, correctionCount, brute_force]
+ 
+# Open our existing CSV file in append mode
+# Create a file object for this file
+with open('Data.csv', 'a', newline='') as f_object:
+ 
+    # Pass this file object to csv.writer()
+    # and get a writer object
+    writer_object = writer(f_object)
+ 
+    # Pass the list as an argument into
+    # the writerow()
+    writer_object.writerow(list)
+ 
+    # Close the file object
+    f_object.close()
 
 pygame.time.wait(1000)
 # Close the window and quit.
