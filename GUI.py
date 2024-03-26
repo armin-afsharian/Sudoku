@@ -197,13 +197,9 @@ if __name__ == "__main__":
         name = enterName()
         if(name != ""):
             flag1 = False
-    #while flag1:
-    #    level = chooseLevel()
-    #    if level == 1 or level == 2 or level == 3:
-    #        print(level)
-    #        flag1 = False
+
     print(name)
-    level = 1
+    level = 3
     pygame.display.set_caption("Sudoku")
     screen = pygame.display.set_mode(size)
 
@@ -257,8 +253,10 @@ if __name__ == "__main__":
 
                 # ------ if clicked on a cell get his row and column ------
                 if readyForInput is True:
-                    correctionCount += 1
-                    currentBoard[row][column] = 0
+                    if currentBoard[row][column] != 0:
+                        currentBoard[row][column] = 0
+                        correctionCount += 1
+                        
                     addNewRect(row, column, WHITE, None)
                     drawTheBorder()
                     readyForInput = False
