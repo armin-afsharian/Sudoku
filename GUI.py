@@ -198,16 +198,12 @@ if __name__ == "__main__":
         if(name != ""):
             flag1 = False
 
-    print(name)
     level = 3
     pygame.display.set_caption("Sudoku")
     screen = pygame.display.set_mode(size)
-
-    sol = mainSolver(level)  # first at all the script solve the sudoku by itself
-
-    print("solveBoard")
-    printBoard(sol)
     feedback = int(sys.argv[1])
+    boardSelection = int(sys.argv[2])
+    sol, Board = mainSolver(level, boardSelection)  # first at all the script solve the sudoku by itsel
     # ------ draw the board ------
     pygame.init()
     screen.fill(BLACK)
@@ -315,7 +311,7 @@ for row in faultBoard:
         if(cellFault >= 2):
             brute_force += 1
 
-list = [name, feedback, int(duration), faults, submitFaults, correctionCount, brute_force]
+list = [name, feedback, boardSelection, int(duration), faults, submitFaults, correctionCount, brute_force]
  
 # Open our existing CSV file in append mode
 # Create a file object for this file
